@@ -48,7 +48,8 @@ nnoremap <Leader>vx :VimuxInterruptRunner<CR>
 " }}}
 
 " Airline {{{
-Bundle "bling/vim-airline"
+Bundle "vim-airline/vim-airline"
+Bundle "vim-airline/vim-airline-themes"
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#show_buffers = 0
 let g:airline_powerline_fonts = 1
@@ -170,7 +171,7 @@ inoremap <expr><TAB> pumvisible() ? "\<C-n>" : "\<TAB>"
 
 " Color schemes
 Bundle "tomasr/molokai"
-Bundle "chriskempson/base16-vim"
+colorscheme molokai
 
 if gotVundle == 0
   echo "Installing Bundles!\n"
@@ -318,7 +319,6 @@ vnoremap > >gv
 " set t_ZR=[23m
 
 set background=dark
-colorscheme base16-apathy
 
 "Show the Subversion 'blame' annotation for the current file, in a narrow
 "  window to the left of it.
