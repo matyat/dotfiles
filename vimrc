@@ -52,7 +52,7 @@ Bundle "vim-airline/vim-airline"
 Bundle "vim-airline/vim-airline-themes"
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#show_buffers = 0
-let g:airline_powerline_fonts = 1
+let g:airline_powerline_fonts = 0
 let g:airline_detect_modified = 1
 let g:airline_detect_paste = 1
 let g:airline_theme = "bubblegum"
@@ -102,7 +102,8 @@ if v:version >= 703
                                 \ 'tags',
                                 \ 'build/',
                                 \ 'callgrind*',
-                                \ 'obj/'], '\|'))
+                                \ 'obj/',
+                                \ 'vendor/'], '\|'))
 
   call unite#custom#source('file_rec,file_rec/async,grep,tag',
         \ 'smartcase', 1)
@@ -259,6 +260,9 @@ if has("autocmd")
   " Gen4 dedupe template files
   autocmd BufRead *.tpl setlocal filetype=cpp
 
+  autocmd BufRead,BufNewFile project.conf setlocal syntax=yaml
+  autocmd BufRead,BufNewFile *.bst setlocal syntax=yaml
+
   " Handy stuff for sticking to PEP8 in python
   function! PEP8()
     setlocal expandtab
@@ -268,6 +272,14 @@ if has("autocmd")
     set colorcolumn=80
   endfunction
   autocmd FileType python call PEP8()
+
+  function! GoFmt()
+    setlocal noexpandtab
+    setlocal shiftwidth=4
+    setlocal tabstop=4
+    setlocal softtabstop=4
+  endfunction
+  autocmd FileType go call GoFmt()
 
   " When editing a file, always jump to the last known cursor position.
   " Don't do it when the position is invalid or when inside an event handler
