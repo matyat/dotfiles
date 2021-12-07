@@ -68,14 +68,14 @@ Bundle "Lokaltog/vim-easymotion"
 
 " Tagbar {{{
 Bundle "majutsushi/tagbar"
-nnoremap <F3> <ESC>:TagbarToggle<cr>
-inoremap <F3> <ESC>:TagbarToggle<cr>a
+nnoremap <F4> <ESC>:TagbarToggle<cr>
+inoremap <F4> <ESC>:TagbarToggle<cr>a
 " }}}
 
 " Undotree {{{
 Bundle "mbbill/undotree"
-nnoremap <F4> <ESC>:UndotreeToggle<cr>
-inoremap <F4> <ESC>:UndotreeToggle<cr>a
+nnoremap <F3> <ESC>:UndotreeToggle<cr>
+inoremap <F3> <ESC>:UndotreeToggle<cr>a
 " }}}
 
 " Signify {{{
