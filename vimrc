@@ -156,19 +156,14 @@ Bundle "tpope/vim-endwise"
 
 Bundle "AndrewRadev/splitjoin.vim"
 
-" Neocomplete/Neocomplecache {{{
-if has('lua')
-  Bundle "Shougo/neocomplete.vim"
-  let g:neocomplete#enable_at_startup = 1
-  let g:neocomplete#enable_smartcase = 1
-else
-  Bundle "Shougo/neocomplcache.vim"
-  let g:neocomplcache_enable_at_startup = 1
-  let g:neocomplcache_enable_smart_case = 1
+" Deoplete {{{
+Bundle 'Shougo/deoplete.nvim'
+if !has('nvim')
+  Bundle 'roxma/nvim-yarp'
+  Bundle 'roxma/vim-hug-neovim-rpc'
 endif
-" Tab completion
-inoremap <expr><TAB> pumvisible() ? "\<C-n>" : "\<TAB>"
-" }}}
+let g:deoplete#enable_at_startup = 1
+inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
 
 " Color schemes
 Bundle "tomasr/molokai"
@@ -212,8 +207,13 @@ inoremap <C-U> <C-G>u<C-U>
 " In many terminal emulators the mouse works just fine, thus enable it.
 if has('mouse')
   set mouse=a
-  set ttymouse=xterm2
+  if !has('nvim')
+      set ttymouse=xterm2
+  endif
 endif
+
+set guifont=Monaco:h14
+set noerrorbells
 
 " Switch syntax , search  and current line highlighting on
 " if there are enough colour available.
