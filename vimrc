@@ -52,7 +52,7 @@ Bundle "vim-airline/vim-airline"
 Bundle "vim-airline/vim-airline-themes"
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#show_buffers = 0
-let g:airline_powerline_fonts = 0
+let g:airline_powerline_fonts = 1
 let g:airline_detect_modified = 1
 let g:airline_detect_paste = 1
 let g:airline_theme = "bubblegum"
@@ -89,59 +89,83 @@ let g:signify_mapping_prev_hunk = '<leader>sk'
 let g:signify_mapping_toggle = '<leader>st'
 " }}}
 
-" Unite {{{
-if v:version >= 703
-  Bundle "Shougo/unite.vim"
-  Bundle "tsukkee/unite-tag"
-  call unite#filters#matcher_default#use(['matcher_fuzzy'])
-  call unite#filters#sorter_default#use(['sorter_rank'])
-  call unite#custom#source('file_mru,file_rec,file_rec/async,grep,locate',
-        \ 'ignore_pattern', join(['\.git/',
-                                \ 'tmp/',
-                                \ 'contrib/',
-                                \ 'tags',
-                                \ 'build/',
-                                \ 'callgrind*',
-                                \ 'obj/',
-                                \ 'vendor/'], '\|'))
+" Denite {{{
+Bundle "Shougo/denite.nvim"
 
-  call unite#custom#source('file_rec,file_rec/async,grep,tag',
-        \ 'smartcase', 1)
-  call unite#custom#profile('default', 'context',
-        \ {'prompt_direction': 'top'})
-  let g:unite_source_history_yank = 1
-  let g:unite_data_directory = '/tmp/unite.vim'
-  let g:unite_prompt = '>>>'
-  let g:unite_split_rule = 'botright'
-  let g:unite_update_time = 200
-  let g:unite_winheight = 15
-  let g:unite_source_rec_max_cache_files = 4000
-
-  if executable('ag')
-    let g:unite_source_grep_command = 'ag'
-    let g:unite_source_grep_default_opts = '--smart-case --nogroup --nocolor --column'
-    let g:unite_source_grep_recursive_opt = ''
-  endif
-
-  nnoremap <leader>f :Unite -start-insert -buffer-name=files file_rec/async<CR>
-  nnoremap <leader>g :Unite -start-insert -buffer-name=grep grep:.<CR>
-  nnoremap <leader>b :Unite -start-insert -buffer-name=buffers buffer<CR>
-  nnoremap <leader>y :Unite -start-insert -buffer-name=yank history/yank<CR>
-  nnoremap <leader>t :Unite -start-insert -buffer-name=tags tag<CR>
-
-  autocmd FileType unite call s:unite_my_settings()
-  function! s:unite_my_settings()
-    " Overwrite settings.
-    nmap <buffer> <ESC> <Plug>(unite_exit)
-    nmap <buffer> j <Plug>(unite_select_next_line)
-    nmap <buffer> k <Plug>(unite_select_previous_line)
-    imap <buffer> <C-j> <Plug>(unite_select_next_line)
-    imap <buffer> <C-k> <Plug>(unite_select_previous_line)
-    imap <silent><buffer><expr> <C-s> unite#do_action('split')
-    imap <silent><buffer><expr> <C-v> unite#do_action('vsplit')
-    imap <silent><buffer><expr> <C-t> unite#do_action('tabopen')
-  endfunction
+if executable('ag')
+	call denite#custom#var('grep', {
+		\ 'command': ['ag'],
+		\ 'default_opts': ['-i', '--vimgrep'],
+		\ 'recursive_opts': [],
+		\ 'pattern_opt': [],
+		\ 'separator': ['--'],
+		\ 'final_opts': [],
+		\ })
 endif
+
+nnoremap <leader>f :DeniteProjectDir -match-highlight file/rec<CR>
+nnoremap <leader>g :Denite -match-highlight grep:.<CR>
+nnoremap <leader>s :<C-u>DeniteCursorWord -match-highlight grep:.<CR>
+nnoremap <leader>b :Denite -match-highlight buffer<CR>
+
+" Define mappings while in 'filter' mode
+"   <C-o>         - Switch to normal mode inside of search results
+"   <Esc>         - Exit denite window in any mode
+"   <CR>          - Open currently selected file in any mode
+"   <C-t>         - Open currently selected file in a new tab
+"   <C-v>         - Open currently selected file a vertical split
+"   <C-s>         - Open currently selected file in a horizontal split
+autocmd FileType denite-filter call s:denite_filter_my_settings()
+function! s:denite_filter_my_settings() abort
+  imap <silent><buffer> <C-o>
+  \ <Plug>(denite_filter_update)
+  nnoremap <silent><buffer><expr> q     denite#do_map('quit')
+  inoremap <silent><buffer><expr> <CR>
+  \ denite#do_map('do_action')
+  inoremap <silent><buffer><expr> <C-t>
+  \ denite#do_map('do_action', 'tabopen')
+  inoremap <silent><buffer><expr> <C-v>
+  \ denite#do_map('do_action', 'vsplit')
+  inoremap <silent><buffer><expr> <C-s>
+  \ denite#do_map('do_action', 'split')
+
+  inoremap <silent><buffer><expr> <C-j> denite#do_map('toggle_select').'j'
+  inoremap <silent><buffer><expr> <C-k> denite#do_map('toggle_select').'k'
+endfunction
+
+" Define mappings while in denite window
+"   <CR>        - Opens currently selected file
+"   q or <Esc>  - Quit Denite window
+"   d           - Delete currenly selected file
+"   p           - Preview currently selected file
+"   <C-o> or i  - Switch to insert mode inside of filter prompt
+"   <C-t>       - Open currently selected file in a new tab
+"   <C-v>       - Open currently selected file a vertical split
+"   <C-s>       - Open currently selected file in a horizontal split
+autocmd FileType denite call s:denite_my_settings()
+function! s:denite_my_settings() abort
+  nnoremap <silent><buffer><expr> <CR>
+  \ denite#do_map('do_action')
+  nnoremap <silent><buffer><expr> q
+  \ denite#do_map('quit')
+  nnoremap <silent><buffer><expr> <Esc>
+  \ denite#do_map('quit')
+  nnoremap <silent><buffer><expr> d
+  \ denite#do_map('do_action', 'delete')
+  nnoremap <silent><buffer><expr> p
+  \ denite#do_map('do_action', 'preview')
+  nnoremap <silent><buffer><expr> i
+  \ denite#do_map('open_filter_buffer')
+  nnoremap <silent><buffer><expr> <C-o>
+  \ denite#do_map('open_filter_buffer')
+  nnoremap <silent><buffer><expr> <C-t>
+  \ denite#do_map('do_action', 'tabopen')
+  nnoremap <silent><buffer><expr> <C-v>
+  \ denite#do_map('do_action', 'vsplit')
+  nnoremap <silent><buffer><expr> <C-s>
+  \ denite#do_map('do_action', 'split')
+endfunction
+
 " }}}
 
 Bundle "Shougo/vimproc"
@@ -164,6 +188,8 @@ if !has('nvim')
 endif
 let g:deoplete#enable_at_startup = 1
 inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
+call deoplete#custom#option('sources', {'_': ['ale']})
+" }}}
 
 " Color schemes
 Bundle "tomasr/molokai"
@@ -178,6 +204,21 @@ let g:syntastic_always_populate_loc_list = 1
 let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 1
 let g:syntastic_check_on_wq = 0
+
+" Bundle "fatih/vim-go"
+
+" ALE {{{
+Bundle "dense-analysis/ale"
+autocmd FileType go call s:go_ale_bindings()
+function! s:go_ale_bindings() abort
+    nnoremap <C-]> :ALEGoToDefinition<CR>
+endfunction
+let g:ale_linters = {'go': ['golangci-lint', 'gofmt', 'gopls']}
+" }}}
+
+" Bundle "github/copilot.vim"
+
+Bundle "ludovicchabant/vim-gutentags"
 
 if gotVundle == 0
   echo "Installing Bundles!\n"
@@ -207,7 +248,7 @@ set incsearch  " do incremental searching
 set smartcase
 set nofoldenable
 
-" Don't use Ex mode, use Q for formatting.
+" Don't use Ex mode, use Q for formattiAng.
 map Q gq
 
 " CTRL-U in insert mode deletes a lot.  Use CTRL-G u to first break undo,
@@ -305,13 +346,27 @@ if has("autocmd")
   " active split {{{
   if v:version > 740
     function! SetRelativeNumber()
-      if and(&ft !=# "unite", &modifiable)
+      if &ft !=# "denite-filter" && &ft !=# "denite" && &modifiable
         set relativenumber
       endif
     endfunction
 
+    function! GoImports()
+        if executable("goimports")
+            silent !goimports -w %
+        elseif executable("gofmt")
+            silent !gofmt -w %
+        endif
+        let view = winsaveview()
+        silent edit
+        call winrestview(view)
+        redraw!
+    endfunction
+
     autocmd BufEnter,InsertLeave * call SetRelativeNumber()
     autocmd BufLeave,InsertEnter * set norelativenumber
+    autocmd BufWritePost, *.go call GoImports()
+    set autoread
   endif
   " }}}
 else
